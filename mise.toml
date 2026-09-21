@@ -1,0 +1,84 @@
+[tools]
+"cargo:hyperfine" = "latest"
+
+[env]
+SOURCE_DIR = "{{ config_root }}/../1brc"
+RUN_NAME = "{{ get_env(name='RUN_NAME', default=exec(command='git -C ../1brc describe --tags --always --dirty')) }}"
+
+[tasks.build]
+description = "Build the 1brc source repository"
+run = "swift build --package-path \"$SOURCE_DIR\""
+
+[tasks.build-release]
+description = "Build an optimized 1brc executable"
+run = "swift build --package-path \"$SOURCE_DIR\" -c release"
+
+[tasks.go]
+depends = ["build-release"]
+run = "time \"$SOURCE_DIR/.build/release/1brc\""
+
+[tasks.verify]
+description = "Compare program output with output.txt"
+depends = ["build-release"]
+run = """
+EXPECTED_OUTPUT="output.txt"
+ACTUAL_OUTPUT="$(mktemp)"
+trap 'rm -f "$ACTUAL_OUTPUT"' EXIT
+
+if [ ! -f "$EXPECTED_OUTPUT" ]; then
+  echo "Missing expected output: $EXPECTED_OUTPUT" >&2
+  exit 1
+fi
+
+"$SOURCE_DIR/.build/release/1brc" > "$ACTUAL_OUTPUT"
+
+if diff -u "$EXPECTED_OUTPUT" "$ACTUAL_OUTPUT"; then
+  echo "Verification passed"
+else
+  echo "Verification failed" >&2
+  exit 1
+fi
+"""
+
+[tasks.benchmark]
+description = "Benchmark the currently checked-out 1brc revision"
+depends = ["build-release"]
+run = """
+mkdir -p benchmarks
+hyperfine "$SOURCE_DIR/.build/release/1brc" \
+  --warmup 1 \
+  --runs 2 \
+  --export-json "benchmarks/${RUN_NAME}.json"
+"""
+
+[tasks.profile]
+description = "Append a named Time Profiler run to the shared trace"
+depends = ["build-release"]
+run = """
+TRACE_PATH="traces/1brc.trace"
+XCTRACE_STATUS=0
+mkdir -p "$(dirname "$TRACE_PATH")"
+
+record_trace() {
+  xcrun xctrace record \
+    "$@" \
+    --run-name "$RUN_NAME" \
+    --output "$TRACE_PATH" \
+    --launch -- \
+    "$SOURCE_DIR/.build/release/1brc"
+}
+
+if [ -e "$TRACE_PATH" ]; then
+  record_trace --append-run || XCTRACE_STATUS=$?
+else
+  record_trace --template 'Time Profiler' || XCTRACE_STATUS=$?
+fi
+
+# xctrace exits with 54 when a requested time limit is reached.
+if [ "$XCTRACE_STATUS" -ne 0 ] && [ "$XCTRACE_STATUS" -ne 54 ]; then
+  echo "xctrace failed with exit status $XCTRACE_STATUS" >&2
+  exit "$XCTRACE_STATUS"
+fi
+
+echo "Trace run '$RUN_NAME' appended to: $TRACE_PATH"
+"""
