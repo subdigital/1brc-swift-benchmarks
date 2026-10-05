@@ -1,7 +1,7 @@
 # Billion Row Challenge Benchmarks
 
 This repo contains the Instruments traces and benchmark results
-for the Billion Row Challenge in Swift.
+for the [Billion Row Challenge in Swift](https://github.com/.
 
 ## Mise Tasks
 
@@ -11,3 +11,8 @@ for the Billion Row Challenge in Swift.
 * `mise r profile` - Run Instruments (Time Profiler) on the release binary. Append the run to the trace file.
 
 These all assume a sibling `1brc` directory checked out to the tag that you want to build/profile.
+
+## Benchmarks
+
+The benchmarks were all run on a M4 Max Mac Studio with 64GB Memory.
+
