@@ -1,2 +1,6 @@
 .DS_Store
 measurements*.txt
+.manim-media/
+__pycache__/
+presentation/assets/number-scale-preview.mp4
+presentation/assets/number-scale-bars-preview.mp4

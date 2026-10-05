@@ -1,5 +1,6 @@
 [tools]
 "cargo:hyperfine" = "latest"
+"pipx:manim" = "0.21.0"
 
 [env]
 SOURCE_DIR = "{{ config_root }}/../1brc"
@@ -82,3 +83,4 @@ fi
 
 echo "Trace run '$RUN_NAME' appended to: $TRACE_PATH"
 """
+

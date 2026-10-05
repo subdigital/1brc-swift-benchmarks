@@ -1,0 +1,26 @@
+{
+  "results": [
+    {
+      "command": "/Users/ben/SynologyDrive/1brc-presentation/bench/../1brc/.build/release/1brc",
+      "mean": 41.60019819686,
+      "stddev": 0.25447626976233256,
+      "median": 41.60019819686,
+      "user": 38.948894620000004,
+      "system": 2.6330978599999995,
+      "min": 41.42025630086,
+      "max": 41.78014009286,
+      "times": [
+        41.42025630086,
+        41.78014009286
+      ],
+      "memory_usage_byte": [
+        15527198720,
+        15527198720
+      ],
+      "exit_codes": [
+        0,
+        0
+      ]
+    }
+  ]
+}
